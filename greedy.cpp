@@ -19,7 +19,7 @@ void selection_sort()
     for (int i = 0; i < n; i++)
     {
         int idx = i;
-
+        
         for (int j = i + 1; j < n; j++)
         {
             if (a[idx] > a[j])
