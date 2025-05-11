@@ -1,0 +1,130 @@
+{
+    "intents": [
+      {
+        "tag": "greeting",
+        "patterns": ["Hi", "Hey", "Hello there", "Good morning", "Good evening", "Hey, how's it going?", "What's up?"],
+        "responses": ["Hello!", "Hi there!", "Hey! How can I assist you today?", "Greetings!"]
+      },
+      {
+        "tag": "goodbye",
+        "patterns": ["Bye", "See you later", "Goodbye", "Catch you later", "Talk to you soon"],
+        "responses": ["Goodbye!", "Take care!", "See you next time!", "It was great chatting with you!"]
+      },
+      {
+        "tag": "thanks",
+        "patterns": ["Thanks", "Thank you", "Thanks a lot", "I appreciate it", "Many thanks"],
+        "responses": ["You're welcome!", "No problem!", "Glad I could help!", "Anytime!"]
+      },
+      {
+        "tag": "name",
+        "patterns": ["What is your name?", "Who are you?", "Tell me your name", "Can I know your name?"],
+        "responses": ["I'm your chatbot assistant!", "You can call me ChatBuddy.", "I’m an AI created to help you."]
+      },
+      {
+        "tag": "age",
+        "patterns": ["How old are you?", "What's your age?", "When were you created?", "Are you young or old?"],
+        "responses": ["I'm timeless!", "I was created recently, but I learn fast!", "Age doesn’t apply to me."]
+      },
+      {
+        "tag": "creator",
+        "patterns": ["Who made you?", "Who developed you?", "Who is your creator?", "Who built you?"],
+        "responses": ["A team of skilled developers created me.", "I was built by brilliant minds!", "My creators are AI enthusiasts."]
+      },
+      {
+        "tag": "help",
+        "patterns": ["Can you help me?", "I need assistance", "I need help", "Help me out", "What can you do?"],
+        "responses": ["Sure, I can help! What do you need?", "I'm here to assist. Ask me anything!", "Happy to help. Tell me what you need."]
+      },
+      {
+        "tag": "weather",
+        "patterns": ["What's the weather today?", "Is it going to rain?", "Weather forecast", "Tell me today's weather"],
+        "responses": ["I can't access live weather yet.", "Try checking a weather site like Weather.com.", "Weather updates coming soon!"]
+      },
+      {
+        "tag": "news",
+        "patterns": ["Tell me the news", "What's happening today?", "Latest news updates", "Any headlines?"],
+        "responses": ["Check a news app or site for updates.", "I can't fetch live news yet.", "Try BBC or Google News."]
+      },
+      {
+        "tag": "joke",
+        "patterns": ["Tell me a joke", "Make me laugh", "Say something funny", "Do you know any jokes?"],
+        "responses": ["Why did the robot go on vacation? He needed to recharge!", "I'm reading a book on anti-gravity — it's impossible to put down!", "Why don't scientists trust atoms? Because they make up everything!"]
+      },
+      {
+        "tag": "mood",
+        "patterns": ["How are you?", "What's your mood?", "Are you okay?", "You doing fine?"],
+        "responses": ["I'm feeling binary awesome!", "Always happy to help!", "All systems operational!"]
+      },
+      {
+        "tag": "food",
+        "patterns": ["What should I eat?", "Suggest some food", "I'm hungry", "Any dinner ideas?"],
+        "responses": ["How about pasta?", "Pizza is always a good idea!", "Try something healthy like a salad."]
+      },
+      {
+        "tag": "travel",
+        "patterns": ["Suggest travel places", "Where can I go on vacation?", "Vacation spots?", "Best countries to visit?"],
+        "responses": ["Japan is beautiful!", "You might enjoy Italy or Switzerland!", "Beaches or mountains — what's your vibe?"]
+      },
+      {
+        "tag": "language",
+        "patterns": ["Can you speak Spanish?", "What languages do you understand?", "Do you know French?", "Can you talk in Hindi?"],
+        "responses": ["I mainly understand English right now.", "Multilingual support coming soon!", "Working on learning new languages!"]
+      },
+      {
+        "tag": "music",
+        "patterns": ["Recommend music", "Play a song", "Music suggestions?", "Any good tracks?"],
+        "responses": ["Try some Lo-fi for relaxation!", "Coldplay is always a good choice.", "Check out the latest pop hits!"]
+      },
+      {
+        "tag": "games",
+        "patterns": ["Let's play", "Recommend games", "Any fun games?", "Game suggestions?"],
+        "responses": ["Try chess or sudoku!", "Mobile games like Among Us are fun!", "Board games are a great option too!"]
+      },
+      {
+        "tag": "fun_facts",
+        "patterns": ["Tell me something interesting", "Fun facts please", "Say something cool", "Impress me with facts"],
+        "responses": ["Did you know honey never spoils?", "Sharks are older than trees!", "Bananas are berries, but strawberries aren’t."]
+      },
+      {
+        "tag": "covid",
+        "patterns": ["What is COVID-19?", "Tell me about coronavirus", "COVID updates", "What is the pandemic status?"],
+        "responses": ["COVID-19 is a global health issue. Stay safe!", "Check WHO for accurate updates.", "Wear masks, stay distant!"]
+      },
+      {
+        "tag": "location",
+        "patterns": ["Where are you located?", "Where do you live?", "What is your location?", "Where are you?"],
+        "responses": ["I exist in the digital world!", "I'm cloud-based, everywhere and nowhere.", "I live inside your device!"]
+      },
+      {
+        "tag": "hours",
+        "patterns": ["What are your hours?", "When are you available?", "Are you 24/7?", "Your work timings?"],
+        "responses": ["I'm available 24/7!", "Always here when you need me.", "No sleep for me!"]
+      },
+      {
+        "tag": "hobbies",
+        "patterns": ["Suggest hobbies", "What are some good hobbies?", "I'm bored, hobby ideas?", "Things to do in free time?"],
+        "responses": ["Try painting or photography!", "Coding can be fun too!", "How about learning guitar or a new language?"]
+      },
+      {
+        "tag": "movies",
+        "patterns": ["Recommend a movie", "What should I watch?", "Movie suggestions?", "Any good films?"],
+        "responses": ["Try Inception or Interstellar!", "How about a comedy like The Grand Budapest Hotel?", "Marvel movies are always fun!"]
+      },
+      {
+        "tag": "books",
+        "patterns": ["Suggest a book", "What book should I read?", "Book recommendations?", "Any good novels?"],
+        "responses": ["Try reading 'Sapiens' by Yuval Noah Harari.", "If you like fiction, go for '1984' or 'The Alchemist'.", "How about a mystery novel?"]
+      },
+      {
+        "tag": "compliment",
+        "patterns": ["You're smart", "I like you", "You're helpful", "You are cool"],
+        "responses": ["Thank you!", "You just made my day!", "I'm here to serve you!"]
+      },
+      {
+        "tag": "insult",
+        "patterns": ["You're dumb", "I hate you", "You're useless", "You are bad"],
+        "responses": ["I'm sorry you feel that way.", "Let me try to do better.", "I'm here to help, not hurt."]
+      }
+    ]
+  }
+  

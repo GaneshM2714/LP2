@@ -88,7 +88,7 @@ public:
         int dest;
         cin >> dest;
 
-        priority_queue<vector<int>, vector<vector<int>>, greater<vector<int>>> pq;
+        priority_queue<vector<int>, vector<vector<int>>, greater<>> pq;
         vector<bool> visited(n, false);
         vector<int> dist(n, INT_MAX);
         vector<int> parent(n, -1);
@@ -186,11 +186,11 @@ public:
     }
     void Union(int u, int v){
         int x = find(u) , y = find(v);
-        if(x==-1 && y ==-1){
-            par[y] = x;
+        if(x==y){
+            return;
         }
 
-        if(rank[x]>rank[y]){
+        else if(rank[x]>rank[y]){
             par[y] = x;
         }
         else if(rank[x]<rank[y]){
@@ -235,9 +235,9 @@ public:
 };
 
 static bool comp(vector<int>& a, vector<int>& b){
-    if(a[1]>b[1]) return true;
-    else if(a[1]<b[1]) return false;
-    return a[0]<b[0];
+    if(a[0]!=b[0]) return a[0]<b[0];
+    if(a[1]!=b[1]) return a[1]>b[1];
+    return a[2]<b[2];
 }
 
 void Job_Schedule(){

@@ -1,218 +1,125 @@
+import gradio as gr
 import nltk
-import re
 import random
+from nltk.chat.util import Chat, reflections
 from nltk.tokenize import word_tokenize
-from nltk.tag import pos_tag
-from datetime import datetime
+from nltk.corpus import wordnet
+from nltk.stem import WordNetLemmatizer
+from nltk import pos_tag
 
-# Download required NLTK data (ensure these are downloaded once)
-# You might need to run nltk.download('punkt') and nltk.download('averaged_perceptron_tagger')
-# separately the first time you run this code.
-try:
-    nltk.data.find('tokenizers/punkt')
-except nltk.downloader.DownloadError:
-    nltk.download('punkt')
-except LookupError:
-     nltk.download('punkt')
+# Ensure NLTK data is downloaded
+nltk.download("punkt")
+nltk.download("averaged_perceptron_tagger")
+nltk.download("wordnet")
 
-try:
-    nltk.data.find('taggers/averaged_perceptron_tagger')
-except nltk.downloader.DownloadError:
-    nltk.download('averaged_perceptron_tagger')
-except LookupError:
-    nltk.download('averaged_perceptron_tagger')
+lemmatizer = WordNetLemmatizer()
 
+# Custom reflections
+custom_reflections = {
+    "i am": "you are", "i was": "you were", "i": "you", "i'm": "you are",
+    "i'd": "you would", "i've": "you have", "i'll": "you will", "my": "your",
+    "you are": "I am", "you were": "I was", "you've": "I have", "you'll": "I will",
+    "your": "my", "yours": "mine", "you": "me", "me": "you"
+}
 
-class RestaurantChatbot:
-    def __init__(self):
-        # Store reservations: {name: {date, time, party_size}}
-        self.reservations = {}
+# Patterns
+patterns = [
+    (r'hi|hello|hey|greetings', ['Hello!', 'Hi there!', 'Greetings!']),
+    (r'how are you?', ["I'm doing well, thank you!", "I'm great! How about you?"]),
+    (r'(*). your name(.*)', ["I'm ChatBot. Nice to meet you!", "You can call me ChatBot."]),
+    (r'what can you do(.*)', [
+        "I can chat with you about various topics like technology, science, weather, and more!",
+        "I can answer questions, provide information, or just have a friendly conversation."
+    ]),
+    (r'(.*) (age|old) (.*)', ["I'm just a program, so I don't have an age!", "I was created recently, so I'm quite young!"]),
+    (r'(.*) (weather|temperature) (.*)', [
+        "I'm not connected to weather services, but I hope it's nice where you are!",
+        "You might want to check a weather app for accurate forecasts."
+    ]),
+    (r'(.*) (science|technology|tech) (.*)', [
+        "Science and technology are fascinating! Did you know the first computer programmer was Ada Lovelace in the 1840s?",
+        "Technology is advancing rapidly. AI like me is just one example of recent developments."
+    ]),
+    (r'(.*) (sports|football|basketball|soccer) (.*)', [
+        "I'm not much of a sports expert, but I know many people enjoy watching and playing sports!",
+        "Sports are great for health and entertainment. Do you have a favorite team?"
+    ]),
+    (r'(.*) (music|song|band) (.*)', [
+        "Music is wonderful! It can affect our moods and emotions.",
+        "There are so many genres of music - pop, rock, classical, jazz... What do you like?"
+    ]),
+    (r'(.*) (movie|film) (.*)', [
+        "Movies are a great way to tell stories. Do you prefer action, comedy, or drama?",
+        "The first motion picture was made in the late 19th century. How far cinema has come!"
+    ]),
+    (r'(.*) (book|read|novel) (.*)', [
+        "Reading expands the mind. What's the last book you enjoyed?",
+        "Books can transport us to different worlds. I'm a fan of classic literature myself."
+    ]),
+    (r'(.*) (food|eat|cuisine) (.*)', [
+        "Food is essential and delicious! Do you like cooking or prefer eating out?",
+        "Every culture has its unique cuisine. What's your favorite dish?"
+    ]),
+    (r'(.*) (travel|vacation|trip) (.*)', [
+        "Traveling broadens our horizons. Where was your last vacation?",
+        "There are so many beautiful places in the world to visit!"
+    ]),
+    (r'(.*) (joke|funny) (.*)', [
+        "Why don't scientists trust atoms? Because they make up everything!",
+        "Why did the scarecrow win an award? Because he was outstanding in his field!"
+    ]),
+    (r'(.*) (thank you|thanks) (.*)', ["You're welcome!", "No problem!", "Happy to help!"]),
+    (r'(.*) (sorry|apologize) (.*)', ["No need to apologize!", "It's alright!", "No worries!"]),
+    (r'(.*) (love|like) (.*)', ["That's wonderful to hear!", "Positive emotions are great!"]),
+    (r'(.*) (hate|dislike) (.*)', ["I'm sorry to hear that.", "Sometimes we feel that way."]),
+    (r'(.*) (help|support) (.*)', ["I'll do my best to help. What do you need?", "How can I assist you?"]),
+    (r'(.*) (time|date) (.*)', ["I don't have access to real-time data, but you can check your device's clock!"]),
+    (r'(.*)', [
+        "I see. Tell me more about that.",
+        "Interesting! Can you elaborate?",
+        "I understand. What else would you like to discuss?",
+        "That's a good point. What's on your mind?"
+    ])
+]
 
-        # Menu structure
-        self.menu = {
-            'vegetarian': ['Veggie Pizza', 'Pasta Primavera'],
-            'non-vegetarian': ['Chicken Alfredo', 'Grilled Salmon'],
-            'dessert': ['Chocolate Cake', 'Tiramisu']
-        }
+# Initialize Chat
+chatbot = Chat(patterns, custom_reflections)
 
-        # FAQ structure
-        self.faq = {
-            'hours': 'We are open from 10 AM to 10 PM daily.',
-            'location': '123 Flavor Street, Food City.',
-            'reservations': 'You can book a table by telling me your name, date, time, and party size!'
-        }
+# Response generation
+def generate_response(message, history):
+    tokens = word_tokenize(message.lower())
+    tagged = pos_tag(tokens)
+    nouns = [word for word, pos in tagged if pos.startswith('NN')]
+    verbs = [word for word, pos in tagged if pos.startswith('VB')]
+    synonyms = set()
+    for word in tokens:
+        for syn in wordnet.synsets(word):
+            for lemma in syn.lemmas():
+                synonyms.add(lemma.name())
 
-        # --- Core Intent Keywords ---
-        # Using keywords and POS tags to guide intent identification
-        self.intent_keywords = {
-            'book': ['book', 'reserve', 'reservation', 'table'],
-            'menu': ['menu', 'food', 'dishes', 'eat'],
-            'faq': ['hours', 'open', 'close', 'location', 'where', 'when', 'address'],
-            'greeting': ['hello', 'hi', 'hey', 'greetings'],
-            'farewell': ['bye', 'goodbye']
-        }
+    response = chatbot.respond(message)
 
-        # --- Entity Extraction Patterns (using regex) ---
-        # These are still needed but are more focused on finding specific data types
-        self.entity_patterns = {
-            'name': r'(?:i am|my name is)\s+([A-Z][a-z]+)', # Look for Name after "I am" or "my name is"
-            'party_size': r'\b(\d+)\b', # Look for numbers for party size
-            'time': r'\b(\d{1,2}(:\d{2})?\s*(?:am|pm))\b', # Look for time patterns (7pm, 7:00pm)
-            'date': r'\b(today|tomorrow|\d{1,2}/\d{1,2})\b' # Look for date patterns
-        }
+    if response is None or random.random() < 0.3:
+        if nouns:
+            return f"Tell me more about {random.choice(nouns)}."
+        elif verbs:
+            return f"What makes you think about {random.choice(verbs)}ing?"
+        elif synonyms:
+            return f"Ah, {random.choice(list(synonyms))} is related. Can you tell me more?"
+        else:
+            return random.choice([
+                "That's an interesting perspective. Can you elaborate?",
+                "I'd love to hear more about your thoughts.",
+                "What else would you like to discuss?"
+            ])
+    return response
 
+# Gradio Interface
+demo = gr.ChatInterface(
+    fn=generate_response,
+    title="🤖 NLTK NLP ChatBot",
+    description="Chat with me about books, tech, travel, food, or just say hi!",
+    theme="soft"
+)
 
-    def tokenize_and_tag(self, text):
-        """Tokenize and POS tag the input text using NLTK."""
-        tokens = word_tokenize(text)
-        tagged = pos_tag(tokens)
-        return tagged
-
-    def extract_entities(self, text, tagged_text):
-        """Extract entities using regex patterns and potentially POS tags."""
-        entities = {'name': None, 'date': None, 'time': None, 'party_size': None}
-
-        # Use regex patterns first for specific formats
-        for entity_type, pattern in self.entity_patterns.items():
-            match = re.search(pattern, text, re.IGNORECASE)
-            if match:
-                entities[entity_type] = match.group(1)
-
-        # Fallback/Enhancement using POS tags for Name and Date (day names)
-        if not entities['name']:
-             # Look for Proper Nouns (NNP) as potential names
-             for word, pos in tagged_text:
-                 if pos == 'NNP' and word not in {'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'}: # Exclude day names
-                     entities['name'] = word
-                     break # Take the first potential name
-
-        if not entities['date']:
-            # Look for day names (Monday, Tuesday, etc.)
-            for word, pos in tagged_text:
-                if pos in ['NNP', 'NN'] and word.lower() in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']:
-                    entities['date'] = word.capitalize()
-                    break # Take the first day name found
-
-
-        # Provide default values if entities are still missing
-        if not entities['name']:
-             entities['name'] = f"Guest_{random.randint(1000, 9999)}"
-        if not entities['date']:
-             entities['date'] = datetime.now().strftime("%d/%m") # Default to today
-        if not entities['time']:
-             entities['time'] = "7:00pm" # Default time
-        if not entities['party_size']:
-             entities['party_size'] = "2" # Default party size
-
-
-        return entities
-
-    def classify_intent(self, tagged_text):
-        """Classify the user's intent based on keywords and POS tags."""
-        # Look for core verbs or nouns indicating intent
-        text_lower = " ".join([word.lower() for word, pos in tagged_text])
-
-        if any(word in text_lower for word in self.intent_keywords['greeting']):
-            return 'greeting'
-        elif any(word in text_lower for word in self.intent_keywords['farewell']):
-            return 'farewell'
-        elif any(word in text_lower for word in self.intent_keywords['book']):
-             return 'booking'
-        elif any(word in text_lower for word in self.intent_keywords['menu']):
-             # Check for specific menu categories within menu intent
-             if 'vegetarian' in text_lower or 'vegan' in text_lower:
-                 return 'menu_vegetarian'
-             elif 'dessert' in text_lower:
-                 return 'menu_dessert'
-             else:
-                 return 'menu_full'
-        elif any(word in text_lower for word in self.intent_keywords['faq']):
-             # Check for specific FAQ types within faq intent
-             if 'hours' in text_lower or 'open' in text_lower or 'close' in text_lower:
-                 return 'faq_hours'
-             elif 'location' in text_lower or 'where' in text_lower or 'address' in text_lower:
-                 return 'faq_location'
-             else:
-                 return 'faq_reservations' # Default FAQ if general FAQ words used
-
-        # If no specific intent matched, return default
-        return 'default'
-
-
-    def respond(self, text):
-        """Process user input and generate a response using NLTK."""
-        text = text.strip()
-        if not text:
-            return "Please say something!"
-
-        # Tokenize and tag the input
-        tagged_text = self.tokenize_and_tag(text)
-
-        # Classify the intent
-        intent = self.classify_intent(tagged_text)
-
-        # Handle response based on classified intent
-        if intent == 'greeting':
-            return "Hi! Welcome to our restaurant. How can I assist you today?"
-
-        elif intent == 'farewell':
-            return "Goodbye! Thanks for visiting us!"
-
-        elif intent == 'booking':
-            entities = self.extract_entities(text, tagged_text)
-            name = entities['name']
-            date = entities['date']
-            time = entities['time']
-            party_size = entities['party_size']
-
-            # Store reservation
-            self.reservations[name] = {
-                'date': date,
-                'time': time,
-                'party_size': party_size
-            }
-
-            details = f"Name: {name}, Date: {date}, Time: {time}, Party Size: {party_size}"
-            return f"I've booked your table! Details: {details}"
-
-        elif intent == 'menu_full':
-             response = (f"Vegetarian: {', '.join(self.menu['vegetarian'])}\n"
-                         f"Non-Vegetarian: {', '.join(self.menu['non-vegetarian'])}\n"
-                         f"Desserts: {', '.join(self.menu['dessert'])}")
-             return f"Here's our menu:\n{response}"
-
-        elif intent == 'menu_vegetarian':
-            response = ', '.join(self.menu['vegetarian'])
-            return f"Our vegetarian options include: {response}"
-
-        elif intent == 'menu_dessert':
-            response = ', '.join(self.menu['dessert'])
-            return f"Our dessert options include: {response}"
-
-        elif intent == 'faq_hours':
-            return self.faq['hours']
-
-        elif intent == 'faq_location':
-            return self.faq['location']
-
-        elif intent == 'faq_reservations':
-            return self.faq['reservations']
-
-        elif intent == 'default':
-            return "I'm not sure I understood. Could you say that again or ask about reservations, menu, or hours?"
-
-# --- Main Execution ---
-def main():
-    chatbot = RestaurantChatbot()
-    print("Welcome to the NLTK Integrated Restaurant Chatbot! Type 'exit' to quit.")
-
-    while True:
-        user_input = input("You: ")
-        if user_input.lower() == 'exit':
-            print("Chatbot: Goodbye! Thanks for visiting!")
-            break
-        response = chatbot.respond(user_input)
-        print(f"Chatbot: {response}")
-
-if __name__ == "__main__":
-    main()
+demo.launch()
